@@ -1,0 +1,29 @@
+{
+    "name": "Level 1",
+    "shapes": [
+        {
+            "shape": "Cube",
+            "edges": {
+                "top": {
+                    "slot": "semicircle",
+                    "recessed": true
+                },
+                "bottom": {
+                    "slot": "semicircle",
+                    "recessed": true
+                },
+                "left": {
+                    "slot": "semicircle",
+                    "recessed": true
+                }
+            }
+        }
+    ],
+    "outline": [
+        {
+            "shape": "Cube",
+            "x": 10,
+            "y": 5
+        }
+    ]
+}
