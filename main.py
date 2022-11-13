@@ -1,10 +1,10 @@
 import sys, pygame
-from game import *
+from classes import *
 
 # Initialize
 pygame.init()
 
-# Main
+# Pygame
 screen = pygame.display.set_mode((800, 600))
 screen.fill((255, 255, 255))
 pygame.display.flip()
@@ -12,6 +12,8 @@ pygame.display.flip()
 clock = pygame.time.Clock()
 
 mouse_pressed = False
+
+game = Game()
 
 # Loop
 while True:
@@ -25,14 +27,14 @@ while True:
             if pygame.display.get_active():
                 mouse_pressed = True
                 position = pygame.mouse.get_pos()
-
-                # Handle mousedown
+                game.on_mousedown(position)
         elif event.type == pygame.MOUSEBUTTONUP:
             mouse_pressed = False
-
-            # Handle mouseup
+            position = pygame.mouse.get_pos()
+            game.on_mouseup(position)
         elif event.type == pygame.MOUSEMOTION:
-            # Handle mouse movements
-            pass
+            if mouse_pressed:
+                position = pygame.mouse.get_pos()
+                game.on_mousemove(position)
 
     clock.tick_busy_loop()

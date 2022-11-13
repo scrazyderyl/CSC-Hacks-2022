@@ -1,6 +1,6 @@
 {
     "name": "Level 1",
-    "shapes": [
+    "pieces": [
         {
             "shape": "Cube",
             "edges": {
