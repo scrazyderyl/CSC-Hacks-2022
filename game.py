@@ -11,7 +11,7 @@ class Level:
             level_data = json.load(file)
 
             self.name = level_data.name
-            self.shapes = level_data.shapes
+            self.pieces = level_data.pieces
             self.outline = level_data.outline
 
 class Game:
@@ -24,27 +24,27 @@ class Game:
         level = Level(level_name)
         self.pieces_list = Piece_List(level.pieces)
         self.board = Board(level.outline)
-        self.dragTarget = None
+        self.drag_target = None
 
     def on_mousedown(self, position):
         clicked = self.pieces_list.get_clicked(position)
 
         if clicked != None:
-            self.dragTarget = clicked
+            self.drag_target = clicked
 
         clicked = self.board.get_clicked(position)
 
         if clicked != None:
-            self.dragTarget = clicked
+            self.drag_target = clicked
 
     def on_mousemove(self, position):
-        if self.dragTarget != None:
-            self.board.drag(self.dragTarget, position)
+        if self.drag_target != None:
+            self.board.on_drag(self.drag_target, position)
 
     def on_mouseup(self, position):
-        if self.dragTarget != None:
-            self.board.drop(self.dragTarget, position)
-            self.dragTarget = None
+        if self.drag_target != None:
+            self.board.drop(self.drag_target, position)
+            self.drag_target = None
 
 class Piece_List:
     def __init__(self, pieces):
@@ -94,52 +94,49 @@ class Board:
         
         return None
     
-    def get_grid_position(self, position):
+    def calculate_grid_pos(self, position):
         gridx = math.floor((position[0] - self.xpos) / self.cell_size)
         gridy = math.floor((position[1] - self.ypos) / self.cell_size)
         return (gridx, gridy)
 
-    def fits_grid(self, target, position):
+    def fits_grid(self, target, grid_pos):
+        # check fits outline and not overlapping other blocks
         pass
 
     def get_compatible(self, target, grid_pos):
-        if type(target) == "PieceGroup":
-            compatible = [group for group in self.groups if group.can_accept_group(target, grid_pos)]
-        elif type(target) == "Piece":
-            compatible = [group for group in self.groups if group.can_accept_piece(target, grid_pos)]
-                
-        return compatible
+        # Return true is all adjacent blocks compatible
+        # Return false is at least one adjacent block incompatible
+        # Return none is there are no adjacent blocks
+        pass
 
-    def is_empty_and_not_adjacent(self, target, grid_pos):
-        if type(target) == "PieceGroup":
-            pass
-        elif type(target) == "Piece":
-            pass
+    def on_drag(self, target, position):
+        grid_pos = self.calculate_grid_pos(position)
 
-    def drag(self, target, position):
-        grid_pos = self.get_grid_position(position)
-        groups = self.get_compatible(target, grid_pos)
+        if self.fits_grid(target, grid_pos):
+            groups = self.get_compatible(target, grid_pos)
 
-        if groups != None or self.is_empty_and_not_adjcent(grid_pos):
-            pass
-    
+            # droppable, not adjacent to other blocks
+            if groups == None:
+                pass
+            # droppable, adjacent to other blocks
+            elif groups:
+                pass
+            
     def drop(self, target, position):
-        grid_pos = self.get_grid_position(position)
+        grid_pos = self.calculate_grid_pos(position)
 
-        if not self.fits_grid(target, position):
-            target.return_pieces()
-            return
+        if self.fits_grid(target, grid_pos):
+            groups = self.get_compatible(target, grid_pos)
 
-        groups = self.get_compatible(target, grid_pos)
-
-        if len(groups) == 1:
-            pass
-        elif len(groups > 1):
-            pass
-        elif self.is_empty_and_not_adjcent(target, grid_pos):
-            pass
-        else:
-            target.return_pieces()
+            # droppable, not adjacent to other blocks
+            if groups == None:
+                pass
+            # droppable, adjacent to other blocks
+            elif groups:
+                pass
+            # not droppable
+            else:
+                target.return_pieces()
 
 class PieceGroup:
     def __init__(self):
@@ -165,12 +162,6 @@ class PieceGroup:
                 return piece
         
         return False
-
-    def can_accept_group(self, group, grid_pos):
-        pass
-
-    def can_accept_piece(self, piece, grid_pos):
-        pass
 
     def drag(self, position):
         for piece in self.pieces:
@@ -215,7 +206,7 @@ class Piece:
         pass
 
     def drop(self, grid_pos):
-        self.set_grid_pos(grid_pos[0], grid_pos[2])
+        self.set_grid_pos(grid_pos[0], grid_pos[1])
 
     def return_piece(self):
         pass
