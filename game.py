@@ -118,9 +118,9 @@ class Board:
 
     def drag(self, target, position):
         grid_pos = self.get_grid_position(position)
-        group = self.get_compatible(target, grid_pos)
+        groups = self.get_compatible(target, grid_pos)
 
-        if group != None or self.is_empty_and_not_adjcent(grid_pos):
+        if groups != None or self.is_empty_and_not_adjcent(grid_pos):
             pass
     
     def drop(self, target, position):
@@ -196,10 +196,6 @@ class Piece:
 
         self.grid_x = None
         self.grid_y = None
-
-    def set_pos(self, x, y):
-        self.xpos = x
-        self.ypos = y
 
     def set_grid_pos(self, grid_x, grid_y):
         self.grid_x = grid_x
