@@ -1,6 +1,5 @@
 import math, json
 from abc import abstractmethod
-from pygame import rect
 
 class Player:
     def __init__(self):
@@ -235,7 +234,7 @@ class Cube(Piece):
     def __init__(self, edges):
         super.__init__("cube")
 
-        top = None; right = None; bottom = None; left = None
+        self.top = None; self.right = None; self.bottom = None; self.left = None
 
         for side in edges.keys():
             edge = edges[side]
