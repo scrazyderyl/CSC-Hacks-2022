@@ -43,9 +43,9 @@ class Game:
             self.board.drag(self.dragTarget, position)
 
     def on_mouseup(self, position):
-        self.board.drop(self.dragTarget, position)
-
-        self.dragTarget = None
+        if self.dragTarget != None:
+            self.board.drop(self.dragTarget, position)
+            self.dragTarget = None
 
 class Piece_List:
     def __init__(self, pieces, xpos, ypos):
@@ -81,14 +81,6 @@ class Board:
     def new_group(self, piece):
         group = PieceGroup(piece)
         self.groups.append(group)
-
-    def add_to_group(self, piece):
-        for group in self.groups:
-            if (group.can_accept(piece)):
-                group.add(piece)
-                return
-        
-        self.new_group(piece)
     
     def get_clicked(self, position, mouse_state):
         for group in self.groups:
@@ -149,6 +141,7 @@ class Board:
 class PieceGroup:
     def __init__(self, piece):
         self.pieces = [piece]
+        piece.set_group(self)
     
     def add(self, piece):
         if type(piece) == "PieceGroup":
@@ -206,6 +199,10 @@ class Piece:
         self.xpos = x
         self.ypos = y
 
+    def set_grid_pos(self, gridx, gridy):
+        self.gridx = gridx
+        self.gridy = gridy
+
     def set_group(self, group):
         self.group = group
     
@@ -217,17 +214,12 @@ class Piece:
         pass
 
     def drag(self, position):
-        # render
         pass
 
     def drop(self, grid_pos):
-        self.gridx = grid_pos[0]
-        self.gridy = grid_pos[1]
-
-        # render
+        self.set_grid_pos(grid_pos[0], grid_pos[2])
 
     def return_piece(self):
-        # render
         pass
 
 class Edge:
