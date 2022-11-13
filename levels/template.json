@@ -22,8 +22,8 @@
     "outline": [
         {
             "shape": "Cube",
-            "x": 10,
-            "y": 5
+            "grid_x": 10,
+            "grid_y": 5
         }
     ]
 }
