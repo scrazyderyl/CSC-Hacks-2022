@@ -2,26 +2,67 @@
     "name": "Level 1",
     "pieces": [
         {
-            "shape": "Cube",
+            "shape": "cube",
             "edges": {
                 "top": {
-                    "slot": "semicircle",
+                    "slot": "square",
                     "recessed": true
+                },
+                "right": {
+                    "slot": "triangle2",
+                    "recessed": true
+                },
+                "bottom": {
+                    "slot": "triangle",
+                    "recessed": false
+                },
+                "left": {
+                    "slot": "semicircle",
+                    "recessed": false
+                }
+            },
+            "grid_x": 10,
+            "grid_y": 5
+        },
+        {
+            "shape": "cube",
+            "edges": {
+                "top": {
+                    "slot": "square",
+                    "recessed": false
                 },
                 "bottom": {
                     "slot": "semicircle",
                     "recessed": true
                 },
                 "left": {
-                    "slot": "semicircle",
+                    "slot": "rectangle",
                     "recessed": true
                 }
-            }
-        }
-    ],
-    "outline": [
+            },
+            "grid_x": 10,
+            "grid_y": 6
+        },
         {
-            "shape": "Cube",
+            "shape": "cube",
+            "edges": {
+                "top": {
+                    "slot": "semicircle",
+                    "recessed": true
+                },
+                "right": {
+                    "slot": "semicircle",
+                    "recessed": true
+                },
+                "bottom": {
+                    "slot": "semicircle",
+                    "recessed": false
+                },
+                "left": {
+                    "slot": "semicircle",
+                    "recessed": false
+                }
+            },
             "grid_x": 10,
             "grid_y": 5
         }

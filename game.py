@@ -1,5 +1,7 @@
 import math, json
 from abc import abstractmethod
+from graphics import PieceSurface
+from pygame import display
 
 class Player:
     def __init__(self):
@@ -10,29 +12,31 @@ class Level:
         with open("levels/" + level_name + ".json", "r", encoding="utf-8-sig") as file:
             level_data = json.load(file)
 
-            self.name = level_data.name
-            self.pieces = level_data.pieces
-            self.outline = level_data.outline
+            self.name = level_data["name"]
+            self.pieces = level_data["pieces"]
 
 class Game:
-    def __init__(self):
-        pass
+    def __init__(self, screen):
+        self.screen = screen
 
     def load_level(self, level_name):
         self.player = None
 
         level = Level(level_name)
-        self.pieces_list = Piece_List(level.pieces)
-        self.board = Board(level.outline)
+        self.pieces_list = Piece_List(self.screen, level.pieces)
+        self.board = Board(self.screen, level.pieces)
         self.drag_target = None
+    
+    def start_level(self):
+        self.pieces_list.render()
 
-    def on_mousedown(self, position):
+    def on_mousedown(self, position, button):
         clicked = self.pieces_list.get_clicked(position)
 
         if clicked != None:
             self.drag_target = clicked
 
-        clicked = self.board.get_clicked(position)
+        clicked = self.board.get_clicked(position, button)
 
         if clicked != None:
             self.drag_target = clicked
@@ -47,8 +51,16 @@ class Game:
             self.drag_target = None
 
 class Piece_List:
-    def __init__(self, pieces):
-        self.pieces = [getattr(globals, piece["shape"])(piece["edges"]) for piece in pieces]
+    BG_COLOR = (230, 230, 230)
+
+    def __init__(self, parent_surface, pieces):
+        self.surface = parent_surface
+
+        self.pieces = []
+
+        for piece in pieces:
+            if piece["shape"] == "cube":
+                self.pieces.append(Cube(self.surface, piece["edges"]))
     
     def add_piece(self, piece):
         self.pieces.append(piece)
@@ -59,6 +71,17 @@ class Piece_List:
     def clear(self):
         self.pieces.clear()
 
+    def render(self):
+        y = 40
+        y_offset = PieceSurface.SCALE * PieceSurface.BASE_LENGTH + 40
+
+        for piece in self.pieces:
+            piece.draw((40, y))
+
+            y += y_offset
+
+        display.update(self.surface.get_rect())
+
     def get_clicked(self, position):
         for piece in self.pieces:
             if piece.contains_point(position):
@@ -67,8 +90,9 @@ class Piece_List:
         return None
 
 class Board:
-    def __init__(self, outline):        
-        self.outline = [OutlinePiece(piece["shape"], piece["grid_x"], piece["gridy"]) for piece in outline]
+    def __init__(self, parent_surface, pieces):
+        self.surface = parent_surface.subsurface(parent_surface.get_rect())
+        self.outline = [OutlinePiece(piece["shape"], piece["grid_x"], piece["grid_y"]) for piece in pieces]
         self.groups = []
 
     def new_group(self, piece):
@@ -80,16 +104,16 @@ class Board:
     def remove_group(self, group):
         self.groups.remove(group)
     
-    def get_clicked(self, position, mouse_state):
+    def get_clicked(self, position, button):
         for group in self.groups:
             piece = group.check_clicked(position)
 
             if group.check_clicked(position):
                 # left click
-                if mouse_state[0]:
+                if button == 1:
                     return group
                 # right click
-                elif mouse_state[1]:
+                elif button == 3:
                     return piece
         
         return None
@@ -197,6 +221,10 @@ class Piece:
     
     def remove_group(self):
         self.group = None
+
+    @abstractmethod
+    def draw(self, position):
+        pass
     
     @abstractmethod
     def contains_point(self, position):
@@ -218,8 +246,8 @@ class OutlinePiece:
         self.grid_y = gridy
 
 class Cube(Piece):
-    def __init__(self, edges):
-        super.__init__("cube")
+    def __init__(self, surface, edges):
+        super().__init__("cube")
 
         self.top = None; self.right = None; self.bottom = None; self.left = None
 
@@ -229,9 +257,14 @@ class Cube(Piece):
             recessed = edge["recessed"]
 
             setattr(self, side, Edge(slot, recessed))
+        
+        self.surface = PieceSurface(surface, [self.top, self.right, self.bottom, self.left])
     
+    def draw(self, position):
+        self.surface.render(position)
+
     def contains_point(self, position):
-        return self.rect.contains(position)
+        pass
 
     @staticmethod
     def cube_cube_tb_compat(top, bottom):
