@@ -119,6 +119,9 @@ class PieceSurface:
         pygame.draw.polygon(self.surface, self.fill_color, points) # fill
         pygame.draw.lines(self.surface, self.border_color, True, points, PieceSurface.BORDER_WIDTH) # border
 
+    def test():
+        print("test")
+
     def draw_semicircle(self, recessed, x1, y1, angle, radius):
         scaled_radius = radius * self.scale
         center = self.shapes[angle]["semicircle"][0]
