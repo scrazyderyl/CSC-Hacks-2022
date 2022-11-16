@@ -14,8 +14,8 @@ class PieceSurface:
     triangle2 = [(4, 0), (4, 2), (5, 0), (6, 2), (6, 0)]
     semicircle = [(5, 0)]
 
-    def __init__(self, parent_surface, edges):
-        self.parent_surface = parent_surface
+    def __init__(self, surface, edges):
+        self.surface = surface
         self.edges = edges
 
         self.shapes = {}
@@ -116,8 +116,8 @@ class PieceSurface:
             point_list.append(Vector2(x, y))
     
     def draw_poly(self, points):
-        pygame.draw.polygon(self.parent_surface, self.fill_color, points) # fill
-        pygame.draw.lines(self.parent_surface, self.border_color, True, points, PieceSurface.BORDER_WIDTH) # border
+        pygame.draw.polygon(self.surface, self.fill_color, points) # fill
+        pygame.draw.lines(self.surface, self.border_color, True, points, PieceSurface.BORDER_WIDTH) # border
 
     def draw_semicircle(self, recessed, x1, y1, angle, radius):
         scaled_radius = radius * self.scale
@@ -134,12 +134,12 @@ class PieceSurface:
             # negative = pygame.surface.Surface((2 * scaled_radius, 2 * scaled_radius))
             # pygame.draw.circle(negative, self.fill_color, (scaled_radius, scaled_radius), scaled_radius) # negative fill
             # self.parent_surface.blit(negative, (x - scaled_radius, y - scaled_radius), self.parent_surface.get_rect(), special_flags=pygame.BLEND_SUB)
-            pygame.draw.circle(self.parent_surface, (255, 255, 255), (x, y), scaled_radius) # fill
+            pygame.draw.circle(self.surface, (255, 255, 255), (x, y), scaled_radius) # fill
 
             arc_start += math.pi
             arc_end += math.pi
             
-            pygame.draw.arc(self.parent_surface, self.border_color, bounds, arc_start, arc_end, PieceSurface.BORDER_WIDTH) # border
+            pygame.draw.arc(self.surface, self.border_color, bounds, arc_start, arc_end, PieceSurface.BORDER_WIDTH) # border
         else:
-            pygame.draw.circle(self.parent_surface, self.fill_color, (x, y), scaled_radius) # fill
-            pygame.draw.arc(self.parent_surface, self.border_color, bounds, arc_start, arc_end, PieceSurface.BORDER_WIDTH) # border
+            pygame.draw.circle(self.surface, self.fill_color, (x, y), scaled_radius) # fill
+            pygame.draw.arc(self.surface, self.border_color, bounds, arc_start, arc_end, PieceSurface.BORDER_WIDTH) # border

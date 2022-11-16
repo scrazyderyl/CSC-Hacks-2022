@@ -21,8 +21,8 @@
                     "recessed": false
                 }
             },
-            "grid_x": 10,
-            "grid_y": 5
+            "grid_x": 0,
+            "grid_y": 0
         },
         {
             "shape": "cube",
@@ -40,8 +40,8 @@
                     "recessed": true
                 }
             },
-            "grid_x": 10,
-            "grid_y": 6
+            "grid_x": 1,
+            "grid_y": 0
         },
         {
             "shape": "cube",
@@ -63,8 +63,8 @@
                     "recessed": false
                 }
             },
-            "grid_x": 10,
-            "grid_y": 5
+            "grid_x": 2,
+            "grid_y": 0
         }
     ]
 }

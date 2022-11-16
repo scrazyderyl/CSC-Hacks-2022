@@ -14,7 +14,7 @@ clock = pygame.time.Clock()
 
 game = Game(screen)
 game.load_level("template")
-game.start_level()
+game.redraw()
 
 mouse_pressed = False
 

@@ -12,11 +12,10 @@ class Level:
         with open("levels/" + level_name + ".json", "r", encoding="utf-8-sig") as file:
             level_data = json.load(file)
 
-            self.name = level_data.name
-            self.pieces = level_data.pieces
-            self.outline = level_data.outline
-            self.grid_x = level_data.grid_x
-            self.grid_y = level_data.grid_y
+            self.name = level_data["name"]
+            self.pieces = level_data["pieces"]
+            # self.grid_x = level_data.grid_x
+            # self.grid_y = level_data.grid_y
 
 class Game:
     def __init__(self, screen):
@@ -31,9 +30,15 @@ class Game:
         self.board = Board(self.screen, level.pieces)
         self.drag_target = None
     
-    def start_level(self):
+    def redraw(self):
+        self.screen.fill((255, 255, 255))
         self.pieces_list.render()
         self.board.render()
+
+        for piece in self.pieces:
+            piece.draw()
+
+        display.flip()
 
     def on_mousedown(self, event):
         if event.button == 1 or event.button == 3:
@@ -56,16 +61,28 @@ class Game:
 
             self.drag_target.drag(dx, dy)
             self.board.on_drag(self.drag_target, event.pos)
+            self.redraw()
 
     def on_mouseup(self, event):
         if self.drag_target != None:
-            self.board.on_drop(self.drag_target, event.pos)
+            # self.board.on_drop(self.drag_target, event.pos)
+            self.drag_target.return_piece()
             self.drag_target = None
+            self.redraw()
 
 class Piece_List:
     def __init__(self, parent_surface, pieces):
         self.surface = parent_surface
         self.pieces = pieces
+        self.set_positions()
+
+    def set_positions(self):
+        y = 40
+        y_offset = PieceSurface.SCALE * PieceSurface.BASE_LENGTH + 40
+
+        for piece in self.pieces:
+            piece.set_position(40, y)
+            y += y_offset
     
     def add_piece(self, piece):
         self.pieces.append(piece)
@@ -77,15 +94,8 @@ class Piece_List:
         self.pieces.clear()
 
     def render(self):
-        y = 40
-        y_offset = PieceSurface.SCALE * PieceSurface.BASE_LENGTH + 40
-
-        for piece in self.pieces:
-            piece.set_position(40, y)
-            y += y_offset
-
-        display.update(self.surface.get_rect())
-
+        pass
+        
 class Board:
     def __init__(self, parent_surface, pieces):
         self.surface = parent_surface.subsurface(parent_surface.get_rect())
@@ -95,9 +105,9 @@ class Board:
 
         self.outline = [OutlinePiece(piece["shape"], piece["grid_x"], piece["grid_y"]) for piece in pieces]
         self.groups = []
-        self.grid = [0]*level.grid_x
-        for i in self.grid:
-            i = [0]*level.grid_y
+        # self.grid = [0]*level.grid_x
+        # for i in self.grid:
+        #     i = [0]*level.grid_y
 
     def new_group(self, piece):
         group = PieceGroup()
@@ -109,7 +119,7 @@ class Board:
         self.groups.remove(group)
 
     def render(self):
-        display.update(self.surface.get_rect())
+        pass
     
     def calculate_grid_pos(self, position):
         gridx = math.floor((position[0] - self.x) / self.cell_size)
@@ -125,14 +135,14 @@ class Board:
     # Returns a list of tuples, each tuple being the coordinates of an adjacent block
     def find_adj_blocks(grid_pos):
         adj_blocks = [1, 2, 3, 4]
-        if(grid_pos[0] == 0):
-            adj_blocks.remove(4)
-        if(grid_pos[0] == outlinepiece.grid_x):
-            adj_blocks.remove(2)
-        if(grid_pos[1] == 0):
-            adj_blocks.remove(3)
-        if(grid_pos[1] == outlinepiece.grid_y):
-            adj_blocks.remove(1)
+        # if(grid_pos[0] == 0):
+        #     adj_blocks.remove(4)
+        # if(grid_pos[0] == outlinepiece.grid_x):
+        #     adj_blocks.remove(2)
+        # if(grid_pos[1] == 0):
+        #     adj_blocks.remove(3)
+        # if(grid_pos[1] == outlinepiece.grid_y):
+        #     adj_blocks.remove(1)
         
         adj_b_pos = []
         for b in adj_blocks:
@@ -221,6 +231,8 @@ class Piece:
     def __init__(self, shape):
         self.shape = shape
         self.group = None
+        self.drag_start_x = None
+        self.drag_start_y = None
 
     def set_group(self, group):
         self.group = group
@@ -232,28 +244,33 @@ class Piece:
         self.x = x
         self.y = y
         self.rect = rect.Rect(x, y, self.surface.size, self.surface.size)
-        self.draw(x, y)
 
-    def draw(self, x, y):
-        self.surface.render(x, y)
+    def draw(self):
+        self.surface.render(self.x, self.y)
     
     @abstractmethod
     def contains_point(self, position):
         pass
 
     def drag(self, dx, dy):
-        new_x = self.x + dx
-        new_y = self.y + dy
-        self.draw(new_x, new_y)
+        if self.drag_start_x == None:
+            self.drag_start_x = self.x
+            self.drag_start_y = self.y
+
+        self.x = self.drag_start_x + dx
+        self.y = self.drag_start_y + dy
 
     def return_piece(self):
-        self.draw(self.x, self.y)
+        self.x = self.drag_start_x
+        self.y = self.drag_start_y
+        self.drag_start_x = None
+        self.drag_start_y = None
 
 class OutlinePiece:
-    def __init__(self, shape, gridx, gridy):
+    def __init__(self, shape, grid_x, grid_y):
         self.shape = shape
-        self.grid_x = gridx
-        self.grid_y = gridy
+        self.grid_x = grid_x
+        self.grid_y = grid_y
 
 class Cube(Piece):
     def __init__(self, surface, edges):
