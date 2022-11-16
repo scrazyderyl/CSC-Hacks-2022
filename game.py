@@ -12,8 +12,11 @@ class Level:
         with open("levels/" + level_name + ".json", "r", encoding="utf-8-sig") as file:
             level_data = json.load(file)
 
-            self.name = level_data["name"]
-            self.pieces = level_data["pieces"]
+            self.name = level_data.name
+            self.pieces = level_data.pieces
+            self.outline = level_data.outline
+            self.grid_x = level_data.grid_x
+            self.grid_y = level_data.grid_y
 
 class Game:
     def __init__(self, screen):
@@ -92,6 +95,9 @@ class Board:
 
         self.outline = [OutlinePiece(piece["shape"], piece["grid_x"], piece["grid_y"]) for piece in pieces]
         self.groups = []
+        self.grid = [0]*level.grid_x
+        for i in self.grid:
+            i = [0]*level.grid_y
 
     def new_group(self, piece):
         group = PieceGroup()
@@ -114,10 +120,41 @@ class Board:
         # check fits outline and not overlapping other blocks
         pass
 
+    #The adj_blocks list contains the number and type of adjacent blocks for the specified grid_pos
+    # 1 = north, 2 = east, 3 = south, 4 = west
+    # Returns a list of tuples, each tuple being the coordinates of an adjacent block
+    def find_adj_blocks(grid_pos):
+        adj_blocks = [1, 2, 3, 4]
+        if(grid_pos[0] == 0):
+            adj_blocks.remove(4)
+        if(grid_pos[0] == outlinepiece.grid_x):
+            adj_blocks.remove(2)
+        if(grid_pos[1] == 0):
+            adj_blocks.remove(3)
+        if(grid_pos[1] == outlinepiece.grid_y):
+            adj_blocks.remove(1)
+        
+        adj_b_pos = []
+        for b in adj_blocks:
+            if(b == 1):
+                adj_b_pos.append((grid_pos[0], grid_pos[1]-1))
+            if(b == 2):
+                adj_b_pos.append((grid_pos[0]+1, grid_pos[1]))
+            if(b == 3):
+                adj_b_pos.append((grid_pos[0], grid_pos[1]+1))
+            if(b == 4):
+                adj_b_pos.append((grid_pos[0]-1, grid_pos[1]))
+        return adj_b_pos
+
+
     def get_compatible(self, target, grid_pos):
         # Return true is all adjacent blocks compatible
         # Return false is at least one adjacent block incompatible
         # Return none is there are no adjacent blocks
+        #for pieces adjacent to target 
+        #check that each adjacent edge is compatible with the respective edge of the t piece
+        #if target has piece to the north, check that north edge is 
+        #compatible with 
         pass
 
     def on_drag(self, target, position):
