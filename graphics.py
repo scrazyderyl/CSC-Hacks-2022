@@ -32,6 +32,7 @@ class PieceSurface:
 
     def set_scale(self, scale):
         self.scale = scale
+        self.size = scale * PieceSurface.BASE_LENGTH
 
         for angle in [0, 90, 180, 270]:
             self.shapes[angle] = {
@@ -56,9 +57,9 @@ class PieceSurface:
     def deg_to_rad(self, degrees):
         return degrees * math.pi / 180
 
-    def render(self, position):
-        x = position[0]
-        y = position[1]
+    def render(self, x, y):
+        drawer_x = x
+        drawer_y = y
         angle = 0
         edge_end = Vector2(self.scale * PieceSurface.BASE_LENGTH, 0)
 
@@ -69,13 +70,13 @@ class PieceSurface:
             if edge != None and edge.slot != "semicircle":
                 shape = edge.slot
                 
-                self.add_points(screen_points, shape, edge.recessed, x, y, angle)
+                self.add_points(screen_points, shape, edge.recessed, drawer_x, drawer_y, angle)
 
             # Finish edge
-            x += edge_end.x
-            y += edge_end.y
+            drawer_x += edge_end.x
+            drawer_y += edge_end.y
 
-            screen_points.append(Vector2(x, y))
+            screen_points.append(Vector2(drawer_x, drawer_y))
 
             angle += 90
             edge_end.rotate_ip(90)
@@ -83,17 +84,17 @@ class PieceSurface:
         self.draw_poly(screen_points)
 
         # Draw semicircle edges
-        x = position[0]
-        y = position[1]
+        drawer_x = x
+        drawer_y = y
         angle = 0
         edge_end = Vector2(self.scale * PieceSurface.BASE_LENGTH, 0)
 
         for edge in self.edges:
             if edge != None and edge.slot == "semicircle":
-                self.draw_semicircle(edge.recessed, x, y, angle, PieceSurface.BASE_RADIUS)
+                self.draw_semicircle(edge.recessed, drawer_x, drawer_y, angle, PieceSurface.BASE_RADIUS)
 
-            x += edge_end.x
-            y += edge_end.y
+            drawer_x += edge_end.x
+            drawer_y += edge_end.y
             angle += 90
             edge_end.rotate_ip(90)
 

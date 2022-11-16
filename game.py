@@ -1,7 +1,7 @@
 import math, json
 from abc import abstractmethod
 from graphics import PieceSurface
-from pygame import display
+from pygame import display, rect
 
 class Player:
     def __init__(self):
@@ -23,44 +23,46 @@ class Game:
         self.player = None
 
         level = Level(level_name)
-        self.pieces_list = Piece_List(self.screen, level.pieces)
+        self.pieces = [Cube(self.screen, piece["edges"]) for piece in level.pieces]
+        self.pieces_list = Piece_List(self.screen, self.pieces.copy())
         self.board = Board(self.screen, level.pieces)
         self.drag_target = None
     
     def start_level(self):
         self.pieces_list.render()
+        self.board.render()
 
-    def on_mousedown(self, position, button):
-        clicked = self.pieces_list.get_clicked(position)
+    def on_mousedown(self, event):
+        if event.button == 1 or event.button == 3:
+            for piece in self.pieces:
+                if piece.contains_point(event.pos):
+                    self.drag_start_x = event.pos[0]
+                    self.drag_start_y = event.pos[1]
 
-        if clicked != None:
-            self.drag_target = clicked
+                    if event.button == 1 and piece.group != None:
+                        self.drag_target = piece.group
+                    else:
+                        self.drag_target = piece
+                    
+                    break
 
-        clicked = self.board.get_clicked(position, button)
-
-        if clicked != None:
-            self.drag_target = clicked
-
-    def on_mousemove(self, position):
+    def on_mousemove(self, event):
         if self.drag_target != None:
-            self.board.on_drag(self.drag_target, position)
+            dx = event.pos[0] - self.drag_start_x
+            dy = event.pos[1] - self.drag_start_y
 
-    def on_mouseup(self, position):
+            self.drag_target.drag(dx, dy)
+            self.board.on_drag(self.drag_target, event.pos)
+
+    def on_mouseup(self, event):
         if self.drag_target != None:
-            self.board.drop(self.drag_target, position)
+            self.board.on_drop(self.drag_target, event.pos)
             self.drag_target = None
 
 class Piece_List:
-    BG_COLOR = (230, 230, 230)
-
     def __init__(self, parent_surface, pieces):
         self.surface = parent_surface
-
-        self.pieces = []
-
-        for piece in pieces:
-            if piece["shape"] == "cube":
-                self.pieces.append(Cube(self.surface, piece["edges"]))
+        self.pieces = pieces
     
     def add_piece(self, piece):
         self.pieces.append(piece)
@@ -76,22 +78,18 @@ class Piece_List:
         y_offset = PieceSurface.SCALE * PieceSurface.BASE_LENGTH + 40
 
         for piece in self.pieces:
-            piece.draw((40, y))
-
+            piece.set_position(40, y)
             y += y_offset
 
         display.update(self.surface.get_rect())
 
-    def get_clicked(self, position):
-        for piece in self.pieces:
-            if piece.contains_point(position):
-                return piece
-        
-        return None
-
 class Board:
     def __init__(self, parent_surface, pieces):
         self.surface = parent_surface.subsurface(parent_surface.get_rect())
+        self.x = 300
+        self.y = 100
+        self.cell_size = PieceSurface.BASE_LENGTH * PieceSurface.SCALE
+
         self.outline = [OutlinePiece(piece["shape"], piece["grid_x"], piece["grid_y"]) for piece in pieces]
         self.groups = []
 
@@ -103,24 +101,13 @@ class Board:
 
     def remove_group(self, group):
         self.groups.remove(group)
-    
-    def get_clicked(self, position, button):
-        for group in self.groups:
-            piece = group.check_clicked(position)
 
-            if group.check_clicked(position):
-                # left click
-                if button == 1:
-                    return group
-                # right click
-                elif button == 3:
-                    return piece
-        
-        return None
+    def render(self):
+        display.update(self.surface.get_rect())
     
     def calculate_grid_pos(self, position):
-        gridx = math.floor((position[0] - self.xpos) / self.cell_size)
-        gridy = math.floor((position[1] - self.ypos) / self.cell_size)
+        gridx = math.floor((position[0] - self.x) / self.cell_size)
+        gridy = math.floor((position[1] - self.y) / self.cell_size)
         return (gridx, gridy)
 
     def fits_grid(self, target, grid_pos):
@@ -146,7 +133,7 @@ class Board:
             elif groups:
                 pass
             
-    def drop(self, target, position):
+    def on_drop(self, target, position):
         grid_pos = self.calculate_grid_pos(position)
 
         if self.fits_grid(target, grid_pos):
@@ -180,20 +167,9 @@ class PieceGroup:
     def remove(self, piece):
         self.pieces.remove(piece)
 
-    def check_clicked(self, position):
+    def drag(self, dx, dy):
         for piece in self.pieces:
-            if piece.contains_point(position):
-                return piece
-        
-        return False
-
-    def drag(self, position):
-        for piece in self.pieces:
-            pass
-    
-    def drop(self, grid_pos):
-        for piece in self.pieces:
-            pass
+            piece.drag(dx, dy)
 
     def return_pieces(self):
         for piece in self.pieces:
@@ -209,35 +185,32 @@ class Piece:
         self.shape = shape
         self.group = None
 
-        self.grid_x = None
-        self.grid_y = None
-
-    def set_grid_pos(self, grid_x, grid_y):
-        self.grid_x = grid_x
-        self.grid_y = grid_y
-
     def set_group(self, group):
         self.group = group
     
     def remove_group(self):
         self.group = None
 
-    @abstractmethod
-    def draw(self, position):
-        pass
+    def set_position(self, x, y):
+        self.x = x
+        self.y = y
+        self.rect = rect.Rect(x, y, self.surface.size, self.surface.size)
+        self.draw(x, y)
+
+    def draw(self, x, y):
+        self.surface.render(x, y)
     
     @abstractmethod
     def contains_point(self, position):
         pass
 
-    def drag(self, position):
-        pass
-
-    def drop(self, grid_pos):
-        self.set_grid_pos(grid_pos[0], grid_pos[1])
+    def drag(self, dx, dy):
+        new_x = self.x + dx
+        new_y = self.y + dy
+        self.draw(new_x, new_y)
 
     def return_piece(self):
-        pass
+        self.draw(self.x, self.y)
 
 class OutlinePiece:
     def __init__(self, shape, gridx, gridy):
@@ -259,12 +232,9 @@ class Cube(Piece):
             setattr(self, side, Edge(slot, recessed))
         
         self.surface = PieceSurface(surface, [self.top, self.right, self.bottom, self.left])
-    
-    def draw(self, position):
-        self.surface.render(position)
 
     def contains_point(self, position):
-        pass
+        return self.rect.collidepoint(position)
 
     @staticmethod
     def cube_cube_tb_compat(top, bottom):

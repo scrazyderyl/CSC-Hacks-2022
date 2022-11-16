@@ -29,15 +29,15 @@ while True:
         elif event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.display.get_active():
                 mouse_pressed = True
-                game.on_mousedown(event.pos, event.button)
+                game.on_mousedown(event)
         elif event.type == pygame.MOUSEBUTTONUP:
             mouse_pressed = False
             position = pygame.mouse.get_pos()
-            game.on_mouseup(position)
+            game.on_mouseup(event)
         elif event.type == pygame.MOUSEMOTION:
             if mouse_pressed:
                 position = pygame.mouse.get_pos()
-                game.on_mousemove(position)
+                game.on_mousemove(event)
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_z:
                 print("Zoom out")
