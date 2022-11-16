@@ -66,5 +66,7 @@
             "grid_x": 2,
             "grid_y": 0
         }
-    ]
+    ],
+    "num_columns": 5,
+    "num_rows":5
 }

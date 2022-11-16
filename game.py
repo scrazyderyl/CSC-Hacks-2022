@@ -14,8 +14,8 @@ class Level:
 
             self.name = level_data["name"]
             self.pieces = level_data["pieces"]
-            self.grid_x = level_data["grid_x"]
-            self.grid_y = level_data["grid_y"]
+            self.grid_x = level_data["num_columns"]
+            self.grid_y = level_data["num_rows"]
 
 class Game:
     def __init__(self, screen):
@@ -97,7 +97,7 @@ class Piece_List:
         pass
         
 class Board:
-    def __init__(self, parent_surface, pieces):
+    def __init__(self, parent_surface, pieces, level):
         self.surface = parent_surface.subsurface(parent_surface.get_rect())
         self.x = 300
         self.y = 100
@@ -105,9 +105,11 @@ class Board:
 
         self.outline = [OutlinePiece(piece["shape"], piece["grid_x"], piece["grid_y"]) for piece in pieces]
         self.groups = []
-        # self.grid = [0]*level.grid_x
-        # for i in self.grid:
-        #     i = [0]*level.grid_y
+        self.level = level
+        self.grid = [[] for i in range(level.grid_x)]
+        for i in self.grid:
+            while(len(i) < level.grid_y):
+                i.append(0)
 
     def new_group(self, piece):
         group = PieceGroup()
@@ -130,31 +132,31 @@ class Board:
         # check fits outline and not overlapping other blocks
         pass
 
-    #The adj_blocks list contains the number and type of adjacent blocks for the specified grid_pos
-    # 1 = north, 2 = east, 3 = south, 4 = west
-    # Returns a list of tuples, each tuple being the coordinates of an adjacent block
-    def find_adj_blocks(grid_pos):
-        adj_blocks = [1, 2, 3, 4]
-        # if(grid_pos[0] == 0):
-        #     adj_blocks.remove(4)
-        # if(grid_pos[0] == outlinepiece.grid_x):
-        #     adj_blocks.remove(2)
-        # if(grid_pos[1] == 0):
-        #     adj_blocks.remove(3)
-        # if(grid_pos[1] == outlinepiece.grid_y):
-        #     adj_blocks.remove(1)
-        
-        adj_b_pos = []
-        for b in adj_blocks:
-            if(b == 1):
-                adj_b_pos.append((grid_pos[0], grid_pos[1]-1))
-            if(b == 2):
-                adj_b_pos.append((grid_pos[0]+1, grid_pos[1]))
-            if(b == 3):
-                adj_b_pos.append((grid_pos[0], grid_pos[1]+1))
-            if(b == 4):
-                adj_b_pos.append((grid_pos[0]-1, grid_pos[1]))
-        return adj_b_pos
+    #The adj_pieces list contains the positions of the already placed 
+    # adjacent pieces for the specified grid_pos
+    # I know this isn't the most readable code, but I couldn't think of another way 
+    #to handle corner and edge pieces that wouldn't cause an index out of bounds error
+    # 1 = North, 2 = East, 3 = South, 4 = West
+    # matrix is self.grid
+    # Returns a list of tuples, each tuple containing the type of adjacency 
+    # and the coordinates of an adjacent piece  i.e. (2, x_coord, y_coord)
+    def find_adj_pieces(self, grid_pos, matrix):
+        adj_pieces = []
+
+        if(grid_pos[0] != 0):
+            if(matrix[grid_pos[0]-1][grid_pos[1]] != 0):
+                adj_pieces.append(4, matrix[grid_pos[0]-1][grid_pos[1]])
+        if(grid_pos[0] != self.level.grid_x):
+            if(matrix[grid_pos[0]+1][grid_pos[1]] != 0):
+                adj_pieces.append(2, matrix[grid_pos[0]+1][grid_pos[1]] )
+        if(grid_pos[1] != 0):
+            if(matrix[grid_pos[0]][grid_pos[1]-1] != 0):
+                adj_pieces.append(1, matrix[grid_pos[0]][grid_pos[1]-1])
+        if(grid_pos[1] != self.level.grid_y):
+            if(matrix[grid_pos[0]][grid_pos[1]+1] != 0 ):
+                adj_pieces.append(3, matrix[grid_pos[0]][grid_pos[1]+1])
+
+        return adj_pieces
 
 
     def get_compatible(self, target, grid_pos):
@@ -165,7 +167,20 @@ class Board:
         #check that each adjacent edge is compatible with the respective edge of the t piece
         #if target has piece to the north, check that north edge is 
         #compatible with 
-        pass
+        adj_pieces = self.find_adj_pieces(grid_pos, self.grid)
+        if(len(adj_pieces) == 0):
+            return None
+        for adj_p in adj_pieces:
+            if(adj_p[0] == 1 and not cube_cube_tb_compat(adj_p[1], target)):
+                return False
+            elif(adj_p[0] == 3 and not cube_cube_tb_compat(target, adj_p[1])):
+                return False
+            elif(adj_p[0] == 4 and not cube_cube_lr_compat(adj_p[1], target)):
+                return False
+            elif(adj_p[0] == 2 and not cube_cube_lr_compat(target, adj_p[1])):
+                return False
+        return True
+        
 
     def on_drag(self, target, position):
         grid_pos = self.calculate_grid_pos(position)
