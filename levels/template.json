@@ -6,11 +6,11 @@
             "edges": {
                 "top": {
                     "slot": "square",
-                    "recessed": true
+                    "recessed": false
                 },
                 "right": {
                     "slot": "triangle2",
-                    "recessed": true
+                    "recessed": false
                 },
                 "bottom": {
                     "slot": "triangle",

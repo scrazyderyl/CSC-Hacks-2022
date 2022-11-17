@@ -1,6 +1,8 @@
 from abc import abstractmethod
-from pygame import rect
-from graphics import PieceSurface
+from pygame.rect import Rect
+from graphics import PieceDrawer
+
+piece_drawer = PieceDrawer()
 
 class PieceGroup:
     def __init__(self):
@@ -49,10 +51,11 @@ class Piece:
     def set_position(self, x, y):
         self.x = x
         self.y = y
-        self.rect = rect.Rect(x, y, self.surface.size, self.surface.size)
+        
+        self.hitbox = Rect(x + self.hitbox_offset, y + self.hitbox_offset, self.hitbox_size, self.hitbox_size)
 
-    def draw(self):
-        self.surface.render(self.x, self.y)
+    def blit(self, target_surface):
+        target_surface.blit(self.surface, (self.x, self.y), target_surface.get_rect())
     
     @abstractmethod
     def contains_point(self, position):
@@ -79,7 +82,7 @@ class OutlinePiece:
         self.grid_y = grid_y
 
 class Cube(Piece):
-    def __init__(self, surface, edges):
+    def __init__(self, edges):
         super().__init__("cube")
 
         self.top = None; self.right = None; self.bottom = None; self.left = None
@@ -91,10 +94,12 @@ class Cube(Piece):
 
             setattr(self, side, Edge(slot, recessed))
         
-        self.surface = PieceSurface(surface, [self.top, self.right, self.bottom, self.left])
+        self.surface = piece_drawer.draw([self.top, self.right, self.bottom, self.left])
+        self.hitbox_size = piece_drawer.hitbox_size
+        self.hitbox_offset = piece_drawer.start_offset
 
     def contains_point(self, position):
-        return self.rect.collidepoint(position)
+        return self.hitbox.collidepoint(position)
 
     @staticmethod
     def cube_cube_tb_compat(top, bottom):

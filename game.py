@@ -1,6 +1,6 @@
 import math, json
 from pygame import display
-from graphics import PieceSurface
+from graphics import PieceDrawer
 from pieces import *
 
 class Player:
@@ -25,7 +25,7 @@ class Game:
         self.player = None
 
         level = Level(level_name)
-        self.pieces = [Cube(self.screen, piece["edges"]) for piece in level.pieces]
+        self.pieces = [Cube(piece["edges"]) for piece in level.pieces]
         self.pieces_list = Piece_List(self.screen, self.pieces.copy())
         self.board = Board(self.screen, level.pieces, level)
         self.drag_target = None
@@ -36,7 +36,7 @@ class Game:
         self.board.render()
 
         for piece in self.pieces:
-            piece.draw()
+            piece.blit(self.screen)
 
         display.flip()
 
@@ -44,8 +44,7 @@ class Game:
         if event.button == 1 or event.button == 3:
             for piece in self.pieces:
                 if piece.contains_point(event.pos):
-                    self.drag_start_x = event.pos[0]
-                    self.drag_start_y = event.pos[1]
+                    self.drag_start_x, self.drag_start_y = event.pos
 
                     if event.button == 1 and piece.group != None:
                         self.drag_target = piece.group
@@ -56,8 +55,9 @@ class Game:
 
     def on_mousemove(self, event):
         if self.drag_target != None:
-            dx = event.pos[0] - self.drag_start_x
-            dy = event.pos[1] - self.drag_start_y
+            x, y = event.pos
+            dx = x - self.drag_start_x
+            dy = y - self.drag_start_y
 
             self.drag_target.drag(dx, dy)
             self.board.on_drag(self.drag_target, event.pos)
@@ -78,7 +78,7 @@ class Piece_List:
 
     def set_positions(self):
         y = 40
-        y_offset = PieceSurface.SCALE * PieceSurface.BASE_LENGTH + 40
+        y_offset = PieceDrawer.SCALE * PieceDrawer.BASE_LENGTH + 40
 
         for piece in self.pieces:
             piece.set_position(40, y)
@@ -101,7 +101,7 @@ class Board:
         self.surface = parent_surface.subsurface(parent_surface.get_rect())
         self.x = 300
         self.y = 100
-        self.cell_size = PieceSurface.BASE_LENGTH * PieceSurface.SCALE
+        self.cell_size = PieceDrawer.BASE_LENGTH * PieceDrawer.SCALE
 
         self.outline = [OutlinePiece(piece["shape"], piece["grid_x"], piece["grid_y"]) for piece in pieces]
         self.groups = []
@@ -124,9 +124,10 @@ class Board:
         pass
     
     def calculate_grid_pos(self, position):
-        gridx = math.floor((position[0] - self.x) / self.cell_size)
-        gridy = math.floor((position[1] - self.y) / self.cell_size)
-        return (gridx, gridy)
+        x, y = position
+        grid_x = math.floor((x - self.x) / self.cell_size)
+        grid_y = math.floor((y - self.y) / self.cell_size)
+        return (grid_x, grid_y)
 
     def fits_grid(self, target, grid_pos):
         # check fits outline and not overlapping other blocks
@@ -158,7 +159,6 @@ class Board:
 
         return adj_pieces
 
-
     def get_compatible(self, target, grid_pos):
         # Return true is all adjacent blocks compatible
         # Return false is at least one adjacent block incompatible
@@ -171,16 +171,15 @@ class Board:
         if(len(adj_pieces) == 0):
             return None
         for adj_p in adj_pieces:
-            if(adj_p[0] == 1 and not cube_cube_tb_compat(adj_p[1], target)):
+            if(adj_p[0] == 1 and not Cube.cube_cube_tb_compat(adj_p[1], target)):
                 return False
-            elif(adj_p[0] == 3 and not cube_cube_tb_compat(target, adj_p[1])):
+            elif(adj_p[0] == 3 and not Cube.cube_cube_tb_compat(target, adj_p[1])):
                 return False
-            elif(adj_p[0] == 4 and not cube_cube_lr_compat(adj_p[1], target)):
+            elif(adj_p[0] == 4 and not Cube.cube_cube_lr_compat(adj_p[1], target)):
                 return False
-            elif(adj_p[0] == 2 and not cube_cube_lr_compat(target, adj_p[1])):
+            elif(adj_p[0] == 2 and not Cube.cube_cube_lr_compat(target, adj_p[1])):
                 return False
         return True
-        
 
     def on_drag(self, target, position):
         grid_pos = self.calculate_grid_pos(position)
