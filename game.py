@@ -27,7 +27,7 @@ class Game:
         level = Level(level_name)
         self.pieces = [Cube(self.screen, piece["edges"]) for piece in level.pieces]
         self.pieces_list = Piece_List(self.screen, self.pieces.copy())
-        self.board = Board(self.screen, level.pieces)
+        self.board = Board(self.screen, level.pieces, level)
         self.drag_target = None
     
     def redraw(self):
