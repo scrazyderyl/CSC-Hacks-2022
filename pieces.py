@@ -7,9 +7,6 @@ piece_drawer = PieceDrawer()
 class PieceGroup:
     def __init__(self):
         self.pieces = []
-
-    def __init__(self, group):
-        self.pieces = group.pieces
     
     def add(self, piece):
         self.pieces.append(piece)
@@ -38,8 +35,8 @@ class Edge:
 class Piece:
     def __init__(self, shape):
         self.shape = shape
-        self.group = PieceGroup()
-        self.group.add(self)
+        self.group = None
+        # self.group.add(self)
 
         self.drag_start_x = None
         self.drag_start_y = None
@@ -75,7 +72,7 @@ class Piece:
         self.x = self.drag_start_x + dx
         self.y = self.drag_start_y + dy
 
-    def return_piece(self):
+    def return_pieces(self):
         if self.drag_start_x != None:
             self.x = self.drag_start_x
             self.y = self.drag_start_y
@@ -111,8 +108,20 @@ class Cube(Piece):
 
     @staticmethod
     def cube_cube_tb_compat(top, bottom):
-        return top.bottom.slot == bottom.top.slot and top.bottom.recessed != bottom.bottom.recessed
+        if top.bottom == None and bottom.top == None:
+            return True
+        
+        if top.bottom == None and bottom.top != None or top.bottom != None and bottom.top == None:
+            return False
+
+        return top.bottom.slot == bottom.top.slot and top.bottom.recessed != bottom.top.recessed
 
     @staticmethod
     def cube_cube_lr_compat(left, right):
+        if left.right == None and right.left == None:
+            return True
+
+        if left.right == None and right.left != None or left.right != None and right.left == None:
+            return False
+
         return left.right.slot == right.left.slot and left.right.recessed != right.left.recessed
