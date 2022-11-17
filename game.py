@@ -227,70 +227,6 @@ class Board:
         
         return True
 
-    # #The adj_pieces list contains the positions of the already placed 
-    # # adjacent pieces for the specified grid_pos
-    # # I know this isn't the most readable code, but I couldn't think of another way 
-    # #to handle corner and edge pieces that wouldn't cause an index out of bounds error
-    # # 1 = North, 2 = East, 3 = South, 4 = West
-    # # matrix is self.grid
-    # # Returns a list of tuples, each tuple containing the type of adjacency
-    # # and the coordinates of an adjacent piece  i.e. (2, x_coord, y_coord)
-    # def find_adj_pieces(self, grid_pos, matrix):
-    #     adj_pieces = []
-        
-    #     if(grid_pos[0] != 0):
-    #         if(matrix[grid_pos[0]-1][grid_pos[1]] != None):
-    #             adj_pieces.append((4, matrix[grid_pos[0]-1][grid_pos[1]]))
-    #     if(grid_pos[0] != self.level.num_columns):
-    #         if(matrix[grid_pos[0]+1][grid_pos[1]] != None):
-    #             adj_pieces.append((2, matrix[grid_pos[0]+1][grid_pos[1]]))
-    #     if(grid_pos[1] != 0):
-    #         if(matrix[grid_pos[0]][grid_pos[1]-1] != None):
-    #             adj_pieces.append((1, matrix[grid_pos[0]][grid_pos[1]-1]))
-    #     if(grid_pos[1] != self.level.num_rows):
-    #         if(matrix[grid_pos[0]][grid_pos[1]+1] != None):
-    #             adj_pieces.append((3, matrix[grid_pos[0]][grid_pos[1]+1]))
-
-    #     return adj_pieces
-    # # when dragging group to location, need to calculate new location of every piece and find adjacent
-    # #pieces for every piece
-    # def find_all_adj(self, piece, grid_pos):
-    #     pos_x, pos_y = grid_pos
-    #     adj_list = []
-    #     first_piece = piece.group.pieces[0]
-    #     dx = pos_x - first_piece.grid_x
-    #     dy = pos_y - first_piece.grid_y
-        
-    #     for pce in piece.group.pieces:
-    #         temp_list = self.find_adj_pieces((pce.grid_x + dx, pce.grid_y + dy), self.grid)
-    #         for p in temp_list:
-    #             adj_list.append(p)
-        
-    #     return adj_list
-
-    # def get_compatible(self, target, grid_pos):
-    #     # Return true is all adjacent blocks compatible
-    #     # Return false is at least one adjacent block incompatible
-    #     # Return none is there are no adjacent blocks
-    #     #for pieces adjacent to target 
-    #     #check that each adjacent edge is compatible with the respective edge of the t piece
-    #     #if target has piece to the north, check that north edge is 
-    #     #compatible with adjacent south edge
-    #     adj_pieces = self.find_all_adj(target, grid_pos)
-    #     if(len(adj_pieces) == 0):
-    #         return None
-    #     for adj_p in adj_pieces:
-    #         if(adj_p[0] == 1 and not Cube.cube_cube_tb_compat(adj_p[1], target)):
-    #             return False
-    #         elif(adj_p[0] == 3 and not Cube.cube_cube_tb_compat(target, adj_p[1])):
-    #             return False
-    #         elif(adj_p[0] == 4 and not Cube.cube_cube_lr_compat(adj_p[1], target)):
-    #             return False
-    #         elif(adj_p[0] == 2 and not Cube.cube_cube_lr_compat(target, adj_p[1])):
-    #             return False
-                
-    #     return True
-
     def on_drag(self, target, position, drag_as_group):
         pass
         # grid_pos = self.calculate_grid_pos(position)
@@ -304,6 +240,8 @@ class Board:
         #     # droppable, adjacent to other blocks
         #     elif groups:
         #         pass
+        # else:
+        #     target.return_pieces()
             
     def on_drop(self, target, position, drag_as_group):
         grid_pos = self.calculate_grid_pos(position)
@@ -323,4 +261,6 @@ class Board:
             # not droppable
             else:
                 target.return_pieces()
+        else:
+            target.return_pieces()
 
