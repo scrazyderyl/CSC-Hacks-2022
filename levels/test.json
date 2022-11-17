@@ -1,0 +1,59 @@
+{
+    "name": "Level 1",
+    "pieces": [
+        {
+            "shape": "cube",
+            "edges": {
+                "right": {
+                    "slot": "square",
+                    "recessed": false
+                },
+                "bottom": {
+                    "slot": "triangle",
+                    "recessed": true
+                }
+            },
+            "grid_x": 0,
+            "grid_y": 0
+        },
+        {
+            "shape": "cube",
+            "edges": {
+                "bottom": {
+                    "slot": "rectangle",
+                    "recessed": true
+                },
+                "left": {
+                    "slot": "square",
+                    "recessed": true
+                }
+            },
+            "grid_x": 1,
+            "grid_y": 0
+        },
+        {
+            "shape": "cube",
+            "edges": {
+                "top": {
+                    "slot": "triangle",
+                    "recessed": false
+                }
+            },
+            "grid_x": 0,
+            "grid_y": 2
+        },
+        {
+            "shape": "cube",
+            "edges": {
+                "top": {
+                    "slot": "rectangle",
+                    "recessed": false
+                }
+            },
+            "grid_x": 1,
+            "grid_y": 2
+        }
+    ],
+    "num_columns": 5, 
+    "num_rows": 5
+}
