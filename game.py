@@ -121,21 +121,26 @@ class Board:
         self.groups.remove(group)
 
     def render(self):
-        board = self.board_style
-        grid1 = Rect(self.x, self.y, 700, 500)
+        width = self.cell_size * self.level.num_columns
+        height = self.cell_size * self.level.num_rows
+        rect = Rect(self.x, self.y, width, height)
+        pygame.draw.rect(self.surface, (230, 230, 230), rect)
 
-        if board == 1:
-            pygame.draw.rect(self.surface, (169, 205, 238), grid1)
-        elif board == 2:
-            pygame.draw.circle(self.surface, (0, 205, 238), (375, 320), 250)
-        elif board == 3:
-            pygame.draw.polygon(self.surface, (155, 0, 155), [(100, 300), (300, 500), (600, 300), (300, 300), (200, 50)])
-        elif board == 4:
-            pygame.draw.polygon(self.surface, (0, 0, 155), [(120,100),(550,500),(250,500)])
-        elif board == 5:
-            pygame.draw.polygon(self.surface, (0, 155, 155), [(100, 103), (600, 101), (415, 486), (385, 288)])
-        elif board == 6:
-            pygame.draw.polygon(self.surface, (255,255,153), [(265, 151), (300, 20), (335, 151), (471, 144), (357, 219), (406, 346), (300, 260), (194, 346), (243, 219), (129, 144)])
+        # board = self.board_style
+        # grid1 = Rect(self.x, self.y, 700, 500)
+
+        # if board == 1:
+        #     pygame.draw.rect(self.surface, (169, 205, 238), grid1)
+        # elif board == 2:
+        #     pygame.draw.circle(self.surface, (0, 205, 238), (375, 320), 250)
+        # elif board == 3:
+        #     pygame.draw.polygon(self.surface, (155, 0, 155), [(100, 300), (300, 500), (600, 300), (300, 300), (200, 50)])
+        # elif board == 4:
+        #     pygame.draw.polygon(self.surface, (0, 0, 155), [(120,100),(550,500),(250,500)])
+        # elif board == 5:
+        #     pygame.draw.polygon(self.surface, (0, 155, 155), [(100, 103), (600, 101), (415, 486), (385, 288)])
+        # elif board == 6:
+        #     pygame.draw.polygon(self.surface, (255,255,153), [(265, 151), (300, 20), (335, 151), (471, 144), (357, 219), (406, 346), (300, 260), (194, 346), (243, 219), (129, 144)])
     
     def calculate_grid_pos(self, position):
         x, y = position
