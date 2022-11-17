@@ -1,8 +1,12 @@
 import math
-import pygame
-from pygame import rect, Vector2
+from pygame import Vector2, draw
+from pygame.rect import Rect
+from pygame.surface import Surface
 
-class PieceSurface:
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+
+class PieceDrawer:
     BASE_LENGTH = 10
     BASE_RADIUS = 2
     SCALE = 6
@@ -14,15 +18,12 @@ class PieceSurface:
     triangle2 = [(4, 0), (4, 2), (5, 0), (6, 2), (6, 0)]
     semicircle = [(5, 0)]
 
-    def __init__(self, surface, edges):
-        self.surface = surface
-        self.edges = edges
-
+    def __init__(self):
         self.shapes = {}
 
-        self.fill_color = (255, 0, 0, 255)
-        self.border_color = (0, 0, 0, 255)
-        self.set_scale(PieceSurface.SCALE)
+        self.fill_color = (255, 0, 255, 255)
+        self.border_color = BLACK
+        self.set_scale(PieceDrawer.SCALE)
 
     def set_fill_color(self, color):
         self.fill_color = color
@@ -32,18 +33,21 @@ class PieceSurface:
 
     def set_scale(self, scale):
         self.scale = scale
-        self.size = scale * PieceSurface.BASE_LENGTH
+        self.edge_length = scale * PieceDrawer.BASE_LENGTH
+        self.hitbox_size = scale * PieceDrawer.BASE_LENGTH + math.floor(PieceDrawer.BORDER_WIDTH / 2) + 1
+        self.render_size = scale * (PieceDrawer.BASE_LENGTH + 2 * 2) + math.floor(PieceDrawer.BORDER_WIDTH / 2) + 1
+        self.start_offset = scale * 2 + PieceDrawer.BORDER_WIDTH
 
         for angle in [0, 90, 180, 270]:
             self.shapes[angle] = {
-                "square": self.transform_point(PieceSurface.square, scale, angle),
-                "rectangle": self.transform_point(PieceSurface.rectangle, scale, angle),
-                "triangle": self.transform_point(PieceSurface.triangle, scale, angle),
-                "triangle2": self.transform_point(PieceSurface.triangle2, scale, angle),
-                "semicircle": self.transform_point(PieceSurface.semicircle, scale, angle),
+                "square": self.transform_points(PieceDrawer.square, scale, angle),
+                "rectangle": self.transform_points(PieceDrawer.rectangle, scale, angle),
+                "triangle": self.transform_points(PieceDrawer.triangle, scale, angle),
+                "triangle2": self.transform_points(PieceDrawer.triangle2, scale, angle),
+                "semicircle": self.transform_points(PieceDrawer.semicircle, scale, angle),
             }
 
-    def transform_point(self, points, scale, angle):
+    def transform_points(self, points, scale, angle):
         vectors = []
 
         for point in points:
@@ -57,16 +61,20 @@ class PieceSurface:
     def deg_to_rad(self, degrees):
         return degrees * math.pi / 180
 
-    def render(self, x, y):
-        drawer_x = x
-        drawer_y = y
+    def draw(self, edges):
+        surface = Surface((self.render_size, self.render_size))
+        surface.set_colorkey(WHITE)
+        surface.fill(WHITE)
+
+        drawer_x = self.start_offset
+        drawer_y = self.start_offset
         angle = 0
-        edge_end = Vector2(self.scale * PieceSurface.BASE_LENGTH, 0)
+        edge_end = Vector2(self.edge_length, 0)
 
         # Create polygon
         screen_points = []
 
-        for edge in self.edges:
+        for edge in edges:
             if edge != None and edge.slot != "semicircle":
                 shape = edge.slot
                 
@@ -81,22 +89,24 @@ class PieceSurface:
             angle += 90
             edge_end.rotate_ip(90)
             
-        self.draw_poly(screen_points)
+        self.draw_poly(surface, screen_points, self.fill_color, self.border_color)
 
         # Draw semicircle edges
-        drawer_x = x
-        drawer_y = y
+        drawer_x = self.start_offset
+        drawer_y = self.start_offset
         angle = 0
-        edge_end = Vector2(self.scale * PieceSurface.BASE_LENGTH, 0)
+        edge_end = Vector2(self.scale * PieceDrawer.BASE_LENGTH, 0)
 
-        for edge in self.edges:
+        for edge in edges:
             if edge != None and edge.slot == "semicircle":
-                self.draw_semicircle(edge.recessed, drawer_x, drawer_y, angle, PieceSurface.BASE_RADIUS)
+                self.draw_semicircle(surface, edge.recessed, drawer_x, drawer_y, angle, PieceDrawer.BASE_RADIUS)
 
             drawer_x += edge_end.x
             drawer_y += edge_end.y
             angle += 90
             edge_end.rotate_ip(90)
+        
+        return surface
 
     def add_points(self, point_list, shape, recessed, x1, y1, angle):
         points = self.shapes[angle][shape]
@@ -114,35 +124,29 @@ class PieceSurface:
             x = x1 + invert_x * point.x
             y = y1 + invert_y * point.y
             point_list.append(Vector2(x, y))
-    
-    def draw_poly(self, points):
-        pygame.draw.polygon(self.surface, self.fill_color, points) # fill
-        pygame.draw.lines(self.surface, self.border_color, True, points, PieceSurface.BORDER_WIDTH) # border
 
-    def test():
-        print("test")
+    def draw_poly(self, surface, points, fill_color, border_color):
+        draw.polygon(surface, fill_color, points) # fill
+        draw.lines(surface, border_color, True, points, PieceDrawer.BORDER_WIDTH) # border
 
-    def draw_semicircle(self, recessed, x1, y1, angle, radius):
+    def draw_semicircle(self, surface, recessed, x1, y1, angle, radius):
         scaled_radius = radius * self.scale
         center = self.shapes[angle]["semicircle"][0]
         x = x1 + center.x
         y = y1 + center.y
 
-        # border
-        bounds = rect.Rect(x - scaled_radius, y - scaled_radius, 2 * scaled_radius, 2 * scaled_radius)
+        size = 2 * scaled_radius
+        bounds = Rect(x - scaled_radius, y - scaled_radius, size, size)
         arc_start = self.deg_to_rad(angle if angle == 0 or angle == 180 else angle - 180)
         arc_end = self.deg_to_rad(angle + 180 if angle == 0 or angle == 180 else angle)
         
         if recessed:
-            # negative = pygame.surface.Surface((2 * scaled_radius, 2 * scaled_radius))
-            # pygame.draw.circle(negative, self.fill_color, (scaled_radius, scaled_radius), scaled_radius) # negative fill
-            # self.parent_surface.blit(negative, (x - scaled_radius, y - scaled_radius), self.parent_surface.get_rect(), special_flags=pygame.BLEND_SUB)
-            pygame.draw.circle(self.surface, (255, 255, 255), (x, y), scaled_radius) # fill
+            draw.circle(surface, WHITE, (x, y), scaled_radius) # fill
 
             arc_start += math.pi
             arc_end += math.pi
             
-            pygame.draw.arc(self.surface, self.border_color, bounds, arc_start, arc_end, PieceSurface.BORDER_WIDTH) # border
+            draw.arc(surface, self.border_color, bounds, arc_start, arc_end, PieceDrawer.BORDER_WIDTH) # border
         else:
-            pygame.draw.circle(self.surface, self.fill_color, (x, y), scaled_radius) # fill
-            pygame.draw.arc(self.surface, self.border_color, bounds, arc_start, arc_end, PieceSurface.BORDER_WIDTH) # border
+            draw.circle(surface, self.fill_color, (x, y), scaled_radius) # fill
+            draw.arc(surface, self.border_color, bounds, arc_start, arc_end, PieceDrawer.BORDER_WIDTH) # border
