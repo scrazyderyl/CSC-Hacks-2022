@@ -48,6 +48,8 @@ class Piece:
         self.group = group
 
     def set_position(self, x, y):
+        self.drag_start_x = None
+        self.drag_start_y = None
         self.x = x
         self.y = y
         

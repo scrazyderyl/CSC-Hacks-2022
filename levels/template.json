@@ -4,67 +4,69 @@
         {
             "shape": "cube",
             "edges": {
-                "top": {
-                    "slot": "square",
-                    "recessed": false
-                },
-                "right": {
-                    "slot": "triangle2",
-                    "recessed": false
-                },
                 "bottom": {
                     "slot": "triangle",
-                    "recessed": false
-                },
-                "left": {
-                    "slot": "semicircle",
-                    "recessed": false
-                }
-            },
-            "grid_x": 0,
-            "grid_y": 0
-        },
-        {
-            "shape": "cube",
-            "edges": {
-                "top": {
-                    "slot": "square",
-                    "recessed": false
-                },
-                "bottom": {
-                    "slot": "semicircle",
-                    "recessed": true
-                },
-                "left": {
-                    "slot": "rectangle",
-                    "recessed": true
-                }
-            },
-            "grid_x": 1,
-            "grid_y": 0
-        },
-        {
-            "shape": "cube",
-            "edges": {
-                "top": {
-                    "slot": "semicircle",
-                    "recessed": true
-                },
-                "right": {
-                    "slot": "semicircle",
-                    "recessed": true
-                },
-                "bottom": {
-                    "slot": "semicircle",
-                    "recessed": false
-                },
-                "left": {
-                    "slot": "semicircle",
                     "recessed": false
                 }
             },
             "grid_x": 2,
             "grid_y": 0
+        },
+        {
+            "shape": "cube",
+            "edges": {
+                "right": {
+                    "slot": "triangle2",
+                    "recessed": true
+                }
+            },
+            "grid_x": 1,
+            "grid_y": 1
+        },
+        {
+            "shape": "cube",
+            "edges": {
+                "top": {
+                    "slot": "triangle",
+                    "recessed": true
+                },
+                "right": {
+                    "slot": "rectangle",
+                    "recessed": false
+                },
+                "bottom": {
+                    "slot": "semicircle",
+                    "recessed": false
+                },
+                "left": {
+                    "slot": "triangle2",
+                    "recessed": false
+                }
+            },
+            "grid_x": 2,
+            "grid_y": 1
+        },
+        {
+            "shape": "cube",
+            "edges": {
+                "left": {
+                    "slot": "rectangle",
+                    "recessed": true
+                }
+            },
+            "grid_x": 3,
+            "grid_y": 1
+        },
+        {
+            "shape": "cube",
+            "edges": {
+                "top": {
+                    "slot": "semicircle",
+                    "recessed": true
+                }
+            },
+            "grid_x": 2,
+            "grid_y": 2
         }
     ],
     "num_columns": 5,

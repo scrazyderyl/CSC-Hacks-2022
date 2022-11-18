@@ -35,7 +35,7 @@ class PieceDrawer:
         self.scale = scale
         self.edge_length = scale * PieceDrawer.BASE_LENGTH
         self.hitbox_size = scale * PieceDrawer.BASE_LENGTH + math.floor(PieceDrawer.BORDER_WIDTH / 2) + 1
-        self.render_size = scale * (PieceDrawer.BASE_LENGTH + 2 * 2) + math.floor(PieceDrawer.BORDER_WIDTH / 2) + 1
+        self.render_size = scale * (PieceDrawer.BASE_LENGTH + 2 * 2) + 4 * math.floor(PieceDrawer.BORDER_WIDTH / 2)
         self.start_offset = scale * 2 + PieceDrawer.BORDER_WIDTH
 
         for angle in [0, 90, 180, 270]:

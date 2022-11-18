@@ -29,7 +29,7 @@ class Game:
         level = Level(level_name)
         self.pieces = [Cube(piece["edges"]) for piece in level.pieces]
         self.pieces_list = Piece_List(self.screen, self.pieces.copy())
-        self.board = Board(self.screen, level.pieces, level)
+        self.board = Board(self.screen, self.pieces.copy(), level)
         self.drag_target = None
     
     def redraw(self):
@@ -59,7 +59,6 @@ class Game:
             dy = y - self.drag_start_y
 
             self.drag_target.drag(dx, dy)
-            self.board.on_drag(self.drag_target, event.pos, self.drag_as_group)
             self.redraw()
 
     def on_mouseup(self, event):
@@ -76,7 +75,7 @@ class Piece_List:
 
     def set_positions(self):
         y = 500
-        x = 40
+        x = 0
 
         for piece in self.pieces:
             if x < 700:
@@ -105,6 +104,7 @@ class Board:
         self.y = 100
         self.cell_size = PieceDrawer.BASE_LENGTH * PieceDrawer.SCALE
 
+        self.pieces = pieces
         self.groups = []
 
         self.level = level
@@ -120,14 +120,19 @@ class Board:
     def remove_group(self, group):
         self.groups.remove(group)
 
+    def set_pos(self, piece, grid_pos):
+        grid_x, grid_y = grid_pos
+        piece.grid_x = grid_x
+        piece.grid_y = grid_y
+        x = self.x + self.cell_size * grid_x - piece.hitbox_offset
+        y = self.y + self.cell_size * grid_y - piece.hitbox_offset
+        piece.set_position(x, y)
+
     def render(self):
         width = self.cell_size * self.level.num_columns
         height = self.cell_size * self.level.num_rows
         rect = Rect(self.x, self.y, width, height)
         pygame.draw.rect(self.surface, (230, 230, 230), rect)
-
-        # board = self.board_style
-        # grid1 = Rect(self.x, self.y, 700, 500)
 
         # if board == 1:
         #     pygame.draw.rect(self.surface, (169, 205, 238), grid1)
@@ -150,13 +155,13 @@ class Board:
 
     def is_position_valid(self, grid_pos):
         grid_x, grid_y = grid_pos
-        return grid_x >= 0 and grid_y >= 0 and grid_x < self.level.num_columns and grid_y < self.level.num_rows and self.grid[grid_x][grid_y] != None
+        return grid_x >= 0 and grid_y >= 0 and grid_x < self.level.num_columns and grid_y < self.level.num_rows and self.grid[grid_x][grid_y] == None
 
     def fits_grid(self, target, grid_pos, drag_as_group):
         grid_x, grid_y = grid_pos
 
         # Handle piece not on grid
-        if target.grid_x == None:
+        if target.grid_x == None or target.group == None:
             return self.is_position_valid(grid_pos)
 
         dx = grid_x - target.grid_x
@@ -217,53 +222,46 @@ class Board:
     def is_group_compatible(self, target, grid_pos, drag_as_group):
         if drag_as_group:
             grid_x, grid_y = grid_pos
-            dx = grid_x - target.grid_x
-            dy = grid_y - target.grid_y
 
-            for piece in target.group.pieces:
-                new_x = piece.grid_x + dx
-                new_y = piece.grid_y + dy
+            if grid_x == None:
+                dx = grid_x - target.grid_x
+                dy = grid_y - target.grid_y
 
-                if not self.is_piece_compatible(target.group.pieces, piece, (new_x, new_y)):
+                for piece in target.group.pieces:
+                    new_x = piece.grid_x + dx
+                    new_y = piece.grid_y + dy
+
+                    if not self.is_piece_compatible(target.group.pieces, piece, (new_x, new_y)):
+                        return False
+            else:
+                dx = 0
+                dy = 0
+
+                if not self.is_piece_compatible(target, target, grid_pos):
                     return False
         else:
             if not self.is_piece_compatible(target.group.pieces, target, grid_pos):
                 return False
         
         return True
-
-    def on_drag(self, target, position, drag_as_group):
-        pass
-        # grid_pos = self.calculate_grid_pos(position)
-
-        # if self.fits_grid(target, grid_pos):
-        #     groups = self.get_compatible(target, grid_pos)
-
-        #     # droppable, not adjacent to other blocks
-        #     if groups == None:
-        #         pass
-        #     # droppable, adjacent to other blocks
-        #     elif groups:
-        #         pass
-        # else:
-        #     target.return_pieces()
             
     def on_drop(self, target, position, drag_as_group):
         grid_pos = self.calculate_grid_pos(position)
+        grid_x, grid_y = grid_pos
 
         if self.fits_grid(target, grid_pos, drag_as_group):
-            groups = self.is_group_compatible(target, grid_pos, drag_as_group)
-            groups = False
+            if target.group == None:
+                compatible = self.is_piece_compatible([], target, grid_pos)
+            else:
+                compatible = self.is_group_compatible(target, grid_pos, drag_as_group)
 
-            target.grid_x = grid_pos[0]
-            target.grid_y = grid_pos[1]
             # droppable, not adjacent to other blocks
-            if groups == None:
-                pass
-            # droppable, adjacent to other blocks
-            elif groups:
-                pass
-            # not droppable
+            if compatible == True:
+                if target.grid_x != None:
+                    self.grid[target.grid_x][target.grid_y] = None
+
+                self.grid[grid_x][grid_y] = target
+                self.set_pos(target, grid_pos)
             else:
                 target.return_pieces()
         else:
